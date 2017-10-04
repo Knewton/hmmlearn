@@ -16,6 +16,7 @@ from .utils import normalize, log_normalize, iter_from_X_lengths, log_mask_zero
 
 #: Supported decoder algorithms.
 DECODER_ALGORITHMS = frozenset(("viterbi", "map"))
+EPSILON = 1e-16
 
 
 class ConvergenceMonitor(object):
@@ -648,4 +649,9 @@ class _BaseHMM(BaseEstimator):
             transmat_ = self.transmat_prior - 1.0 + stats['trans']
             self.transmat_ = np.where(self.transmat_ == 0.0,
                                       self.transmat_, transmat_)
+
+            if hasattr(self, 'transmat_mask') and self.transmat_mask is not None:
+                self.transmat_ = np.where(self.transmat_mask == 0,
+                                          EPSILON, self.transmat_)
+
             normalize(self.transmat_, axis=1)

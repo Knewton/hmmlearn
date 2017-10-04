@@ -1,49 +1,43 @@
-# hmmlearn generated files
-doc/_build
-doc/auto_examples
-doc/generated
+# compiled code
+*.pyc
 
-# Python compiled files
-*.py[cod]
-
-# C extensions
-*.so
-
-# Packages
-*.egg
-*.egg-info
-dist
-build
-eggs
-parts
-bin
-var
-sdist
-develop-eggs
-.installed.cfg
-lib
-lib64
-__pycache__
-
-# Installer logs
-pip-log.txt
-
-# Unit test / coverage reports
-.cache
-.coverage
-.tox
-nosetests.xml
-
-# Translations
-*.mo
-
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
-
-# vim and emacs backups
-*~
-.#*
+# swap files
 *.swp
 *.swo
+*~
+*#
+
+# apple cruft
+.DS_Store
+
+# py.test artifacts
+__pycache__
+
+# log files
+*.log
+
+# coverage files
+.coverage
+coverage.xml
+htmlcov
+
+# ide files
+.komodoproject
+.komodotools
+.classpath
+.project
+.pydevproject
+.settings
+.idea
+*.iml
+*.ipr
+*.iws
+
+# build files
+target
+dist/
+*.egg-info/
+build/
+MANIFEST
+
+.tox/

@@ -370,7 +370,8 @@ class MultinomialHMM(_BaseHMM):
                  startprob_prior=1.0, transmat_prior=1.0,
                  algorithm="viterbi", random_state=None,
                  n_iter=10, tol=1e-2, verbose=False,
-                 params="ste", init_params="ste"):
+                 params="ste", init_params="ste",
+                 transmat_mask = None):
         _BaseHMM.__init__(self, n_components,
                           startprob_prior=startprob_prior,
                           transmat_prior=transmat_prior,
@@ -378,6 +379,7 @@ class MultinomialHMM(_BaseHMM):
                           random_state=random_state,
                           n_iter=n_iter, tol=tol, verbose=verbose,
                           params=params, init_params=init_params)
+        self.transmat_mask = transmat_mask
 
     def _init(self, X, lengths=None):
         if not self._check_input_symbols(X):
@@ -393,8 +395,7 @@ class MultinomialHMM(_BaseHMM):
                 for i, j in iter_from_X_lengths(X, lengths):
                     symbols |= set(X[i:j].flatten())
                 self.n_features = len(symbols)
-            self.emissionprob_ = self.random_state \
-                .rand(self.n_components, self.n_features)
+            self.emissionprob_ = self.random_state.rand(self.n_components, self.n_features)
             normalize(self.emissionprob_, axis=1)
 
     def _check(self):
