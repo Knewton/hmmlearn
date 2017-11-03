@@ -217,6 +217,54 @@ class _BaseHMM(BaseEstimator):
             posteriors[i:j] = self._compute_posteriors(fwdlattice, bwdlattice)
         return logprob, posteriors
 
+    def compute_causal_posteriors(self, X, lengths=None):
+        """Compute the probability of being in each state, given _prior_ observations.
+
+
+        p(s_t|x_{1:t-1}) = \sum_{s_{t-1}) [ p(s_t|s_{t-1}) \alpha_{t-1}(s_{t-1})
+                              / \sum_s \alpha_{t_1}(s) ]
+
+        Parameters
+        ----------
+        X : array-like, shape (n_samples, n_features)
+            Feature matrix of individual samples.
+
+        lengths : array-like of integers, shape (n_sequences, ), optional
+            Lengths of the individual sequences in ``X``. The sum of
+            these should be ``n_samples``.
+
+        Returns
+        -------
+        logprob : float
+            Log likelihood of ``X``.
+
+        posteriors : array, shape (n_samples, n_components)
+            State-membership probabilities for each latent component at time t.
+
+        """
+        check_is_fitted(self, "startprob_")
+        self._check()
+
+        X = check_array(X)
+        posteriors = np.zeros((X.shape[0], self.n_components))
+        for i, j in iter_from_X_lengths(X, lengths):
+            framelogprob = self._compute_log_likelihood(X[i:j])
+            n_samples, n_components = framelogprob.shape
+            # compute log-forward probs
+            fwdlattice = np.zeros((n_samples, n_components))
+            _hmmc._forward(n_samples, n_components,
+                           log_mask_zero(self.startprob_),
+                           log_mask_zero(self.transmat_),
+                           framelogprob, fwdlattice)
+            alphas = np.exp(fwdlattice)
+            # p(s_t|x) = p(s_t, x) / \sum_s p(s_t, x)
+            alphas /= np.sum(alphas, axis=1, keepdims=True)
+            # apply transition probabilities
+            alphas = alphas.dot(self.transmat_)
+            # prepend starting probs to all but the last forward probabilities
+            posteriors[i:j, :] = np.vstack((self.startprob_, alphas[n_samples - 1, :]))
+        return posteriors
+
     def score(self, X, lengths=None):
         """Compute the log probability under the model.
 
